@@ -4,6 +4,19 @@
 
 This project, part of the "AI for Software Engineering" course, demonstrates a comprehensive AI development workflow applied to two distinct classification problems: Student Dropout Prediction and Hospital Readmission Prediction. The assignment covers theoretical problem definition, data strategy, model development, evaluation, and critical thinking on ethical implications and trade-offs.
 
+## Technology Stack
+
+![Python](https://img.shields.io/badge/Python-3.8+-blue) ![Jupyter](https://img.shields.io/badge/Jupyter-Notebook-orange) ![scikit-learn](https://img.shields.io/badge/scikit--learn-1.3+-orange) ![pandas](https://img.shields.io/badge/pandas-1.5+-blue) ![NumPy](https://img.shields.io/badge/NumPy-1.21+-blue) ![Matplotlib](https://img.shields.io/badge/Matplotlib-3.5+-blue) ![Seaborn](https://img.shields.io/badge/Seaborn-0.11+-blue)
+
+## Presentation
+
+View the interactive presentation: [AI Development Workflow Presentation](https://plp-academy.github.io/ai_se_week5_assignment/)
+
+## Kaggle Notebooks
+
+- [Student Dropout Prediction](https://www.kaggle.com/code/georgekkweli/student-dropout-prediction)
+- [Hospital Readmission Prediction](https://www.kaggle.com/code/georgekkweli/hospital-readmission-prediction)
+
 ## Project Structure
 
 The repository is organized as follows:
