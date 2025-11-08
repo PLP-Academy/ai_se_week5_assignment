@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>AI Development Workflow Assignment Presentation</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0f1720;
+    --card:#0b1220;
+    --muted:#94a3b8;
+    --accent:#00d1b2;
+    --glass: rgba(255,255,255,0.04);
+    --text:#e6eef8;
+    --max-width:1100px;
+  }
+  html,body{height:100%;margin:0;background:linear-gradient(180deg,#071023 0%, #071524 60%);font-family:Inter, "Roboto", system-ui, -apple-system, "Segoe UI", sans-serif;color:var(--text);-webkit-font-smoothing:antialiased;}
+  .app{display:grid;grid-template-columns: 1fr; height:100vh;overflow:hidden;}
+  /* top bar with hamburger and progress */
+  header.topbar{
+    display:flex;align-items:center;gap:12px;padding:12px 18px;background:linear-gradient(90deg, rgba(255,255,255,0.02), transparent);backdrop-filter: blur(6px);border-bottom:1px solid rgba(255,255,255,0.03);
+  }
+  .brand{display:flex;gap:12px;align-items:center}
+  .logo{
+    width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#5ce4c9);display:flex;align-items:center;justify-content:center;font-weight:700;color:#002226;font-family:Roboto;font-size:18px;
+  }
+  .title{font-weight:600;font-size:1rem;color:var(--text)}
+  .controls{margin-left:auto;display:flex;gap:10px;align-items:center}
+  .btn{background:var(--glass);border:1px solid rgba(255,255,255,0.03);padding:8px 12px;border-radius:8px;color:var(--text);cursor:pointer;font-weight:600}
+  .btn.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06)}
+  .progress{height:6px;background:rgba(255,255,255,0.03);border-radius:999px;overflow:hidden;flex-basis:300px}
+  .progress > i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),#78ffd6);width:0%;transition:width .45s cubic-bezier(.2,.9,.25,1);}
+
+  /* layout */
+  .container{display:flex;height:calc(100vh - 64px);overflow:hidden}
+  nav.sidebar{
+    width:260px;background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);border-right:1px solid rgba(255,255,255,0.02);padding:20px;box-sizing:border-box;display:flex;flex-direction:column;gap:18px;
+    min-width:72px;
+  }
+  nav.sidebar.collapsed{width:72px}
+  .nav-head{display:flex;align-items:center;gap:10px}
+  .nav-list{display:flex;flex-direction:column;gap:6px;margin-top:6px}
+  .nav-item{padding:10px 12px;border-radius:10px;color:var(--muted);text-decoration:none;display:flex;gap:10px;align-items:center;font-weight:600}
+  .nav-item.active{background:rgba(255,255,255,0.03);color:var(--text);box-shadow:0 6px 20px rgba(2,6,23,0.5)}
+  .nav-item span.ico{width:30px;height:30px;border-radius:8px;background:rgba(255,255,255,0.02);display:inline-flex;align-items:center;justify-content:center;font-weight:700;color:var(--accent)}
+  .nav-item small{color:var(--muted);font-weight:400}
+
+  /* slide stage */
+  .stage{flex:1;display:flex;align-items:center;justify-content:center;padding:36px;box-sizing:border-box;position:relative;overflow:hidden}
+  .slide{
+    width:100%;max-width:var(--max-width);height:calc(100% - 72px);background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:14px;padding:48px;box-sizing:border-box;display:flex;flex-direction:column;gap:18px;align-items:flex-start;justify-content:flex-start;box-shadow: 0 10px 40px rgba(2,6,23,0.7);
+    transform: translateY(24px);opacity:0;transition: transform .6s cubic-bezier(.2,.9,.25,1), opacity .6s;position:absolute;left:50%;top:50%;transform:translate(-50%, -40px) scale(.995);
+  }
+  .slide.active{opacity:1;transform:translate(-50%,-50%) scale(1);z-index:5}
+  h1,h2,h3{font-family:Roboto, Inter; color:var(--text);margin:0}
+  h1{font-size:1.8rem;font-weight:700}
+  h2{font-size:1.3rem;font-weight:600;color:#cfeef6}
+  h3{font-size:0.9rem;color:var(--muted);margin-top:6px}
+  p.lead{font-size:0.9rem;color:#d7e8f3;line-height:1.55;max-width:52ch}
+  .content-row{display:flex;gap:22px;width:100%;align-items:flex-start}
+  .col{flex:1;min-width:0}
+  .card{background:rgba(255,255,255,0.02);padding:18px;border-radius:12px;border:1px solid rgba(255,255,255,0.02)}
+  ul.features{padding-left:18px;color:var(--muted);line-height:1.6;margin:0}
+  .illustration{width:100%;max-width:350px;max-height:500px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);object-fit:cover}
+  .stats{display:flex;gap:12px;margin-top:12px}
+  .stat{flex:1;background:linear-gradient(90deg, rgba(255,255,255,0.02), transparent);padding:14px;border-radius:10px;text-align:center}
+  .stat h4{margin:0;font-size:1.4rem;color:var(--accent)}
+  .stat p{margin:6px 0 0;color:var(--muted);font-size:0.95rem}
+
+  /* footer tiny controls */
+  footer.controls{position:absolute;right:26px;bottom:26px;display:flex;gap:10px;align-items:center}
+  .toggle-auto{display:inline-flex;gap:8px;align-items:center;padding:8px 12px;border-radius:999px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.03);cursor:pointer}
+  .sr-only{position:absolute;height:1px;width:1px;overflow:hidden;clip:rect(1px,1px,1px,1px);white-space:nowrap}
+
+  /* responsiveness */
+  @media (max-width:900px){
+    nav.sidebar{width:200px}
+    .slide{padding:24px;border-radius:0;height:100vh;max-width:100vw}
+    header.topbar{padding:10px}
+    .illustration{max-width:250px}
+  }
+  /* prefers reduced motion */
+  @media (prefers-reduced-motion: reduce){
+    .slide{transition:none}
+    .progress > i{transition:none}
+  }
+</style>
+</head>
+<body>
+<div class="app" role="application" aria-label="AI development workflow presentation">
+  <header class="topbar" role="banner">
+    <div class="brand" aria-hidden="false">
+      <div class="logo">AI</div>
+      <div>
+        <div class="title">AI Development Workflow — Presentation</div>
+        <div style="font-size:12px;color:var(--muted)">Education & Healthcare case studies</div>
+      </div>
+    </div>
+
+    <div class="progress" aria-hidden="true" title="progress">
+      <i id="progressBar"></i>
+    </div>
+
+    <div class="controls" role="toolbar" aria-label="Presentation controls">
+      <button id="prevBtn" class="btn ghost" title="Previous (←)">← Prev</button>
+      <button id="playBtn" class="btn" title="Play / Pause narration">Play</button>
+      <button id="nextBtn" class="btn ghost" title="Next (→)">Next →</button>
+      <button id="toggleSidebar" class="btn ghost" title="Toggle sidebar">☰</button>
+    </div>
+  </header>
+
+  <div class="container">
+    <nav class="sidebar" id="sidebar" aria-label="Slide navigation">
+      <div class="nav-head" style="align-items:center">
+        <div style="flex:1">
+          <div style="font-weight:700">Slides</div>
+          <div style="font-size:12px;color:var(--muted)">Quick navigation</div>
+        </div>
+      </div>
+      <div class="nav-list" id="navList">
+        <a href="#" class="nav-item active" data-index="0"><span class="ico">O</span><div><div>Project Overview</div><small>Intro</small></div></a>
+        <a href="#" class="nav-item" data-index="1"><span class="ico">2</span><div><div>Student Dropout Prediction</div><small>Part 1</small></div></a>
+        <a href="#" class="nav-item" data-index="2"><span class="ico">3</span><div><div>Hospital Readmission Prediction</div><small>Part 2</small></div></a>
+        <a href="#" class="nav-item" data-index="3"><span class="ico">4</span><div><div>Critical Thinking</div><small>Part 3</small></div></a>
+        <a href="#" class="nav-item" data-index="4"><span class="ico">5</span><div><div>Reflection & Workflow</div><small>Part 4</small></div></a>
+      </div>
+    </nav>
+
+    <main class="stage" id="stage" role="main">
+      <!-- Slide 0 -->
+      <section class="slide active" data-index="0" id="slide-0" aria-label="Project Overview">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:20px;width:100%">
+          <div>
+            <img class="illustration" src="AI workflow.png" alt="Illustration: AI workflow" data-tts="An abstract illustration representing AI workflow and data flow.">
+          </div>
+          <div style="flex:1;min-width:0">
+            <h1 data-tts="Welcome to the AI development workflow presentation. This project explores AI solutions in education and healthcare.">AI Development Workflow Assignment</h1>
+            <p class="lead" data-tts="A comprehensive exploration of AI problem-solving in education and healthcare, focusing on real-world applications and ethical considerations.">A comprehensive exploration of AI problem-solving in education and healthcare, focusing on real-world applications, model development challenges, and ethical considerations in sensitive domains.</p>
+            <div style="margin-top:18px" class="card">
+              <p style="margin:0;color:var(--muted)" data-tts="We will cover two case studies: student dropout prediction using educational data, and hospital readmission prediction using healthcare records, followed by critical thinking on ethics, bias, and trade-offs, and reflections on the development workflow.">We will cover two case studies: student dropout prediction using educational data and learning management systems, and hospital readmission prediction using electronic health records. This will be followed by critical thinking on ethics, bias, and trade-offs in AI applications, and reflections on the iterative AI development workflow from problem definition to deployment and monitoring.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 1 -->
+      <section class="slide" data-index="1" id="slide-1" aria-label="Student Dropout Prediction">
+        <div class="content-row">
+          <div class="col">
+            <h2 data-tts="Part one: student dropout prediction.">Part 1: Student Dropout Prediction</h2>
+            <h3 data-tts="The goal is to identify students at high risk of dropping out in order to deliver timely interventions.">Problem Definition</h3>
+            <p class="lead" data-tts="Identify students at high risk of dropping out early to enable targeted interventions and improve retention rates. Objectives include early identification, intervention targeting, and resource optimization. Stakeholders are educational institutions and students, with student retention rate as the primary KPI. Data sources include SIS for demographics and academic records, and LMS logs for behavioral data. Potential historical bias is a key concern. Preprocessing involves imputation, feature engineering like GPA and attendance rate, and categorical encoding. Model: Random Forest Classifier with 80/20 split, achieving 77.3% accuracy but low dropout recall of 0.32, highlighting minority class identification challenges. Evaluation focuses on F1-Score and Recall due to imbalance. Concept drift from policy changes must be monitored. Deployment challenge: ensuring fairness and mitigating bias through continuous monitoring and fairness metrics.">Identify students at high risk of dropping out early to enable targeted interventions and improve retention rates. Objectives include early identification, intervention targeting, and resource optimization. Stakeholders are educational institutions and students, with student retention rate as the primary KPI. Data sources include SIS for demographics and academic records, and LMS logs for behavioral data. Potential historical bias is a key concern. Preprocessing involves imputation, feature engineering like GPA and attendance rate, and categorical encoding. Model: Random Forest Classifier with 80/20 split, achieving 77.3% accuracy but low dropout recall of 0.32, highlighting minority class identification challenges. Evaluation focuses on F1-Score and Recall due to imbalance. Concept drift from policy changes must be monitored. Deployment challenge: ensuring fairness and mitigating bias through continuous monitoring and fairness metrics.</p>
+          </div>
+
+          <div class="col" style="max-width:360px">
+            <div class="card">
+              <h3>Model</h3>
+              <p style="margin:6px 0 12px;color:var(--muted)">Random Forest Classifier — baseline pipeline (80/20 split)</p>
+              <div class="stats">
+                <div class="stat">
+                  <h4 data-tts="Seventy seven point three percent accuracy">77.3%</h4>
+                  <p>Model Accuracy</p>
+                </div>
+                <div class="stat">
+                  <h4 data-tts="Dropout recall point three two">0.32</h4>
+                  <p>Dropout Recall</p>
+                </div>
+              </div>
+            </div>
+
+            <div style="margin-top:12px" class="card">
+              <h3>Model Outcomes</h3>
+              <ul class="features">
+                <li data-tts="Accuracy of seventy seven point three percent with low recall for dropout class indicating imbalance issues.">Accuracy: 77.3%, Recall for Dropout: 0.32 (imbalance issue)</li>
+                <li data-tts="F1-Score and Recall prioritized due to class imbalance in dropout data.">Evaluation: F1-Score, Recall (imbalanced data)</li>
+                <li data-tts="Concept drift from policy changes requires monitoring and retraining.">Concept Drift: Policy changes, economic shifts</li>
+                <li data-tts="Deployment requires fairness metrics and bias mitigation strategies.">Deployment: Fairness checks, continuous monitoring</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 2 -->
+      <section class="slide" data-index="2" id="slide-2" aria-label="Hospital Readmission Prediction">
+        <div class="content-row">
+          <div class="col">
+            <h2 data-tts="Part two: hospital readmission prediction.">Part 2: Hospital Readmission Prediction</h2>
+            <h3 data-tts="The goal is to predict readmissions to improve patient outcomes and resource allocation.">Problem Definition</h3>
+            <p class="lead" data-tts="Predict hospital readmissions to optimize healthcare resource allocation and improve patient outcomes. Data acquired from EHR for demographics, medical history, diagnoses, procedures, medications, lab results, and discharge summaries, plus administrative data for billing and stay duration. Preparation includes feature selection, missing value imputation, one-hot encoding for categoricals, and StandardScaler for numericals. Target: readmitted within 30 days. Model: Random Forest in Pipeline with ColumnTransformer, 80/20 split, achieving 81.2% accuracy but very low readmission recall of 0.01 due to severe class imbalance. Deployment: real-time API or batch prediction. Optimization: feature engineering for clinical context, address imbalance with oversampling or cost-sensitive learning. Critical trade-off: high false negatives risk patient health and increase costs.">Predict hospital readmissions to optimize healthcare resource allocation and improve patient outcomes. Data acquired from EHR for demographics, medical history, diagnoses, procedures, medications, lab results, and discharge summaries, plus administrative data for billing and stay duration. Preparation includes feature selection, missing value imputation, one-hot encoding for categoricals, and StandardScaler for numericals. Target: readmitted within 30 days. Model: Random Forest in Pipeline with ColumnTransformer, 80/20 split, achieving 81.2% accuracy but very low readmission recall of 0.01 due to severe class imbalance. Deployment: real-time API or batch prediction. Optimization: feature engineering for clinical context, address imbalance with oversampling or cost-sensitive learning. Critical trade-off: high false negatives risk patient health and increase costs.</p>
+          </div>
+
+          <div class="col" style="max-width:360px">
+            <div class="card">
+              <h3>Model</h3>
+              <p style="margin:6px 0 12px;color:var(--muted)">Random Forest in a preprocessing pipeline (80/20 split)</p>
+              <div class="stats">
+                <div class="stat">
+                  <h4 data-tts="Eighty one point two percent accuracy">81.2%</h4>
+                  <p>Model Accuracy</p>
+                </div>
+                <div class="stat">
+                  <h4 data-tts="Readmission recall point zero one">0.01</h4>
+                  <p>Readmission Recall</p>
+                </div>
+              </div>
+            </div>
+
+            <div style="margin-top:12px" class="card">
+              <h3>Model Outcomes</h3>
+              <ul class="features">
+                <li data-tts="Accuracy of eighty one point two percent with extremely low recall for readmitted class indicating severe imbalance.">Accuracy: 81.2%, Recall for Readmitted: 0.01 (severe imbalance)</li>
+                <li data-tts="Class imbalance is critical — model biased towards non-readmission predictions.">Class imbalance critical — biased towards non-readmission</li>
+                <li data-tts="High false negatives risk patient health and increase emergency service burden.">High false negatives — risk patient outcomes and costs</li>
+                <li data-tts="Optimization needed for clinical feature engineering and imbalance techniques.">Optimization: clinical features, imbalance techniques</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 3 -->
+      <section class="slide" data-index="3" id="slide-3" aria-label="Critical Thinking">
+        <h2 data-tts="Part three: critical thinking on ethics, bias, and tradeoffs.">Part 3: Critical Thinking</h2>
+        <div style="display:flex;gap:18px;width:100%;margin-top:12px">
+          <div class="col card">
+            <h3>Ethics & Bias</h3>
+            <ul class="features">
+              <li data-tts="Stigmatization affects self-esteem and motivation in education; unfair interventions widen gaps.">Stigmatization in education — affects self-esteem, unfair allocation</li>
+              <li data-tts="Resource bias in healthcare — disproportionate allocation, undermines autonomy, needs transparency.">Resource allocation bias in healthcare — harms autonomy, needs transparency</li>
+              <li data-tts="Privacy concerns with sensitive data; ethical guidelines and regulations required.">Privacy concerns with sensitive data — ethical guidelines essential</li>
+              <li data-tts="Mitigation: fairness metrics like demographic parity, data augmentation with SMOTE, XAI for bias identification.">Mitigation: fairness metrics, SMOTE/ADASYN, XAI techniques</li>
+            </ul>
+          </div>
+          <div class="col card">
+            <h3>Trade-offs</h3>
+            <ul class="features">
+              <li data-tts="Random Forest high accuracy but low interpretability vs simpler models like logistic regression for sensitive contexts.">Model performance vs interpretability — RF accuracy vs simpler models</li>
+              <li data-tts="False negatives costly in dropout; false positives costly in readmission with low recall indicating high false negatives.">False positives vs false negatives — costs vary by domain</li>
+              <li data-tts="Low readmission recall risks patient health and increases emergency burden — critical trade-off in healthcare.">Low readmission recall — risks health, increases costs</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 4 -->
+      <section class="slide" data-index="4" id="slide-4" aria-label="Reflection and Workflow">
+        <div>
+          <h2 data-tts="Part four: reflection and workflow.">Part 4: Reflection & Workflow</h2>
+          <h3 data-tts="Key challenges, learnings and future work.">Challenges, Learnings & Future Improvements</h3>
+          <ul class="features">
+            <li data-tts="Data imbalance impacts recall for minority classes, requiring metrics beyond accuracy and techniques like oversampling or cost-sensitive learning. Feature engineering demands domain expertise for nuanced features. Balancing interpretability with performance is key in sensitive domains.">Challenges: Data imbalance affects recall (e.g., 0.01 for readmissions); feature engineering requires domain knowledge; interpretability vs performance trade-off</li>
+            <li data-tts="Thorough exploratory data analysis is essential for understanding data types, distributions, missing values, and biases. Structured workflow ensures systematic approach from problem definition to deployment. Iterative refinement involves continuous tuning and algorithm comparison. Ethical considerations must be integrated throughout the lifecycle.">Learnings: EDA for data understanding; structured workflow for reproducibility; iterative refinement with tuning; ethical integration</li>
+            <li data-tts="Advanced preprocessing with sophisticated imputation and outlier handling. Hyperparameter optimization using GridSearchCV or RandomizedSearchCV. Addressing imbalance with SMOTE, ADASYN, or ensemble methods. Model comparison across algorithms like Gradient Boosting or SVMs. Integrating Explainable AI tools like SHAP or LIME for transparency.">Future improvements: Advanced preprocessing (imputation, outliers); hyperparameter tuning (GridSearchCV); imbalance techniques (SMOTE, ADASYN); model comparison (multiple algorithms); XAI integration (SHAP, LIME)</li>
+          </ul>
+        </div>
+      </section>
+
+      <footer class="controls" aria-hidden="false">
+        <label class="toggle-auto" title="Auto-advance slides">
+          <input id="autoAdvance" type="checkbox" style="display:none">
+          <span id="autoIcon">⏯</span>
+          <span style="font-size:13px;color:var(--muted);margin-left:6px">Auto-advance</span>
+        </label>
+      </footer>
+    </main>
+  </div>
+</div>
+
+<script>
+/* ===== Presentation engine + TTS (conversational, chunked) =====
+   - Uses data-tts attributes for narration text
+   - Selects best available English voice (prefers British male if present)
+   - Chunks long text into manageable utterances, chains them to preserve natural pauses
+   - Supports keyboard nav, touch swipe, auto-advance option
+*/
+
+// Basic state
+const slides = Array.from(document.querySelectorAll('.slide'));
+const navItems = Array.from(document.querySelectorAll('.nav-item'));
+const progressBar = document.getElementById('progressBar');
+let current = 0;
+let isPlaying = false;
+let autoAdvance = false;
+let autoTimer = null;
+const AUTO_DELAY_MS = 8000; // default between slides when auto-advance on
+const preferredVoiceNames = [
+  "Microsoft George - English (United Kingdom)",
+  "Microsoft James - English (United Kingdom)",
+  "Google UK English Male",
+  "Microsoft David - English (United States)",
+  "Male"
+];
+
+let speechVoice = null;
+let synth = ('speechSynthesis' in window) ? window.speechSynthesis : null;
+
+// pick best voice when available
+function pickVoice(){
+  if (!synth) return null;
+  const voices = synth.getVoices();
+  // try preferred list
+  for (const name of preferredVoiceNames){
+    const found = voices.find(v => v.name.includes(name) || v.lang.toLowerCase().includes('en-gb') && v.name.toLowerCase().includes('male'));
+    if (found) { speechVoice = found; console.info('Selected voice:', found.name); return; }
+  }
+  // fallback to any English voice (prefer higher local priority)
+  speechVoice = voices.find(v => v.lang && v.lang.toLowerCase().startsWith('en')) || voices[0];
+  if (speechVoice) console.info('Fallback voice selected:', speechVoice.name);
+}
+if (synth){
+  // voices may load asynchronously
+  pickVoice();
+  if (synth.onvoiceschanged !== undefined) synth.onvoiceschanged = pickVoice;
+}
+
+// helpers
+function updateProgress(){
+  const pct = ((current + 1) / slides.length) * 100;
+  progressBar.style.width = pct + '%';
+}
+function setActiveSlide(index, {speak=true} = {}){
+  if (index < 0) index = 0;
+  if (index >= slides.length) index = slides.length - 1;
+  slides.forEach(s => s.classList.remove('active'));
+  navItems.forEach(n => n.classList.remove('active'));
+  slides[index].classList.add('active');
+  const link = navItems.find(n => Number(n.dataset.index) === index);
+  if (link) link.classList.add('active');
+  current = index;
+  updateProgress();
+
+  if (speak) speakSlide(index);
+}
+
+function nextSlide(){
+  setActiveSlide(Math.min(current + 1, slides.length - 1));
+}
+function prevSlide(){
+  setActiveSlide(Math.max(current - 1, 0));
+}
+
+// TTS chunker & speaker
+function splitIntoChunks(text, maxChars=160){
+  // naive chunker that tries to split on sentence boundaries and commas for natural pauses
+  const sentences = text.split(/(?<=[.?!])\s+/);
+  const chunks = [];
+  let buffer = '';
+  for (let s of sentences){
+    if ((buffer + ' ' + s).trim().length <= maxChars){
+      buffer = (buffer + ' ' + s).trim();
+    } else {
+      if (buffer) chunks.push(buffer);
+      if (s.length <= maxChars){
+        buffer = s;
+      } else {
+        // further split long sentences by commas
+        const parts = s.split(/,\s+/);
+        for (const p of parts){
+          if ((buffer + ' ' + p).trim().length <= maxChars){
+            buffer = (buffer + ' ' + p).trim();
+          } else {
+            if (buffer) chunks.push(buffer);
+            chunks.push(p.trim());
+            buffer = '';
+          }
+        }
+      }
+    }
+  }
+  if (buffer) chunks.push(buffer.trim());
+  return chunks;
+}
+
+// speak an array of chunks in series
+function speakChunks(chunks, opts = {}){
+  if (!synth) return Promise.resolve();
+  // cancel any current speech
+  synth.cancel();
+  return new Promise((resolve, reject) => {
+    let i = 0;
+    const speakNext = () => {
+      if (i >= chunks.length) return resolve();
+      const u = new SpeechSynthesisUtterance(chunks[i]);
+      u.rate = opts.rate || 0.95;
+      u.pitch = opts.pitch || 1;
+      if (speechVoice) u.voice = speechVoice;
+      u.volume = opts.volume !== undefined ? opts.volume : 1;
+      u.onend = () => {
+        // small pause between chunks for naturalness
+        setTimeout(()=>{ i++; speakNext(); }, 220);
+      };
+      u.onerror = (e) => { console.warn('Utterance error', e); i++; speakNext(); };
+      synth.speak(u);
+    };
+    speakNext();
+  });
+}
+
+// gather the tts text for a slide (data-tts attributes take priority)
+function gatherSlideTTS(index){
+  const el = slides[index];
+  // collect data-tts from heading / p / images etc in DOM order
+  const nodes = el.querySelectorAll('[data-tts]');
+  let text = '';
+  nodes.forEach(n => {
+    let chunk = n.getAttribute('data-tts') || n.textContent || '';
+    chunk = chunk.trim();
+    if (chunk) text += (text ? ' ' : '') + chunk;
+  });
+  // fallback: if no data-tts found, gather visible text
+  if (!text) text = Array.from(el.querySelectorAll('h1,h2,h3,p,li,figcaption'))
+                      .map(n => n.textContent.trim()).filter(Boolean).join('. ');
+  // normalize whitespace
+  return text.replace(/\s+/g,' ').trim();
+}
+
+let lastUtterancePromise = null;
+async function speakSlide(index){
+  if (!synth) return;
+  // stop any previous speech
+  synth.cancel();
+  const rawText = gatherSlideTTS(index);
+  if (!rawText) return;
+  // break into chunks
+  const chunks = splitIntoChunks(rawText, 160);
+  isPlaying = true;
+  document.getElementById('playBtn').textContent = 'Pause';
+  try {
+    lastUtterancePromise = speakChunks(chunks, {rate:0.95, pitch:1, volume:1});
+    await lastUtterancePromise;
+  } catch(e){}
+  isPlaying = false;
+  document.getElementById('playBtn').textContent = 'Play';
+  // auto-advance if enabled
+  if (autoAdvance){
+    // small delay before advancing
+    clearTimeout(autoTimer);
+    autoTimer = setTimeout(()=>{
+      if (current < slides.length - 1) setActiveSlide(current + 1);
+    }, AUTO_DELAY_MS);
+  }
+}
+
+// controls wiring
+document.getElementById('nextBtn').addEventListener('click', ()=> setActiveSlide(Math.min(current+1, slides.length-1)));
+document.getElementById('prevBtn').addEventListener('click', ()=> setActiveSlide(Math.max(current-1,0)));
+document.getElementById('toggleSidebar').addEventListener('click', ()=>{
+  const sidebar = document.getElementById('sidebar');
+  sidebar.classList.toggle('collapsed');
+});
+document.getElementById('playBtn').addEventListener('click', ()=>{
+  if (!synth){ alert('Speech synthesis not supported in this browser.'); return;}
+  if (isPlaying){
+    synth.cancel();
+    isPlaying = false;
+    document.getElementById('playBtn').textContent = 'Play';
+  } else {
+    speakSlide(current);
+  }
+});
+
+document.getElementById('autoAdvance').addEventListener('change', (e)=>{
+  autoAdvance = e.target.checked;
+});
+
+// nav items
+navItems.forEach(item=>{
+  item.addEventListener('click', (ev)=>{
+    ev.preventDefault();
+    const idx = Number(item.dataset.index);
+    setActiveSlide(idx);
+  });
+});
+
+// keyboard nav
+document.addEventListener('keydown', (e)=>{
+  if (e.key === 'ArrowRight' || e.key === 'PageDown') {
+    setActiveSlide(Math.min(current+1, slides.length-1));
+  } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+    setActiveSlide(Math.max(current-1, 0));
+  } else if (e.key === ' '){ // space toggles play/pause
+    e.preventDefault();
+    document.getElementById('playBtn').click();
+  }
+});
+
+// touch swipe
+let touchStartX = null;
+document.addEventListener('touchstart', (e)=>{ if (e.touches && e.touches.length === 1) touchStartX = e.touches[0].clientX; }, {passive:true});
+document.addEventListener('touchend', (e)=>{
+  if (touchStartX === null) return;
+  const dx = (e.changedTouches[0].clientX - touchStartX);
+  if (dx > 60) setActiveSlide(Math.max(current-1,0));
+  if (dx < -60) setActiveSlide(Math.min(current+1, slides.length-1));
+  touchStartX = null;
+}, {passive:true});
+
+// initialize
+updateProgress();
+setActiveSlide(0, {speak:false});
+
+// Accessibility: focus active slide for screen readers
+slides.forEach(s => s.setAttribute('tabindex', '-1'));
+function focusCurrentSlide(){
+  const s = slides[current];
+  if (s) s.focus();
+}
+setTimeout(focusCurrentSlide, 400);
+
+// Small UX: ensure reduced-motion users get immediate layout
+if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+  document.documentElement.style.scrollBehavior = 'auto';
+}
+</script>
+</body>
+</html>
